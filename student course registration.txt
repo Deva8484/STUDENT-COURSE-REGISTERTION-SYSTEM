@@ -1,0 +1,177 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+class Course {
+    String code;
+    String title;
+    String description;
+    int capacity;
+    int enrolled;
+
+    public Course(String code, String title, String description, int capacity) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.capacity = capacity;
+        this.enrolled = 0;
+    }
+
+    public boolean isFull() {
+        return enrolled >= capacity;
+    }
+
+    public void enroll() {
+        if (!isFull()) {
+            enrolled++;
+        }
+    }
+
+    public void drop() {
+        if (enrolled > 0) {
+            enrolled--;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %s\nDescription: %s\nCapacity: %d\nEnrolled: %d\n",
+                code, title, description, capacity, enrolled);
+    }
+}
+
+class Student {
+    String id;
+    String name;
+    List<String> registeredCourses;
+
+    public Student(String id, String name) {
+        this.id = id;
+        this.name = name;
+        this.registeredCourses = new ArrayList<>();
+    }
+
+    public void registerCourse(String courseCode) {
+        registeredCourses.add(courseCode);
+    }
+
+    public void dropCourse(String courseCode) {
+        registeredCourses.remove(courseCode);
+    }
+}
+
+public class CourseRegistrationSystem {
+
+    private static Map<String, Course> courseDatabase = new HashMap<>();
+    private static Map<String, Student> studentDatabase = new HashMap<>();
+
+    public static void main(String[] args) {
+        // Initialize some courses and students
+        initializeCourses();
+        initializeStudents();
+
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("1. List Courses");
+            System.out.println("2. Register for a Course");
+            System.out.println("3. Drop a Course");
+            System.out.println("4. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume newline
+
+            switch (choice) {
+                case 1:
+                    listCourses();
+                    break;
+                case 2:
+                    registerForCourse(scanner);
+                    break;
+                case 3:
+                    dropCourse(scanner);
+                    break;
+                case 4:
+                    System.out.println("Exiting...");
+                    scanner.close();
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void initializeCourses() {
+        courseDatabase.put("CS101", new Course("CS101", "Introduction to Computer Science", "Basic concepts of computer science", 30));
+        courseDatabase.put("MATH202", new Course("MATH202", "Calculus II", "Advanced calculus topics", 25));
+        courseDatabase.put("HIST303", new Course("HIST303", "World History", "An overview of world history", 20));
+    }
+
+    private static void initializeStudents() {
+        studentDatabase.put("S001", new Student("S001", "Alice"));
+        studentDatabase.put("S002", new Student("S002", "Bob"));
+    }
+
+    private static void listCourses() {
+        System.out.println("Available Courses:");
+        for (Course course : courseDatabase.values()) {
+            System.out.println(course);
+        }
+    }
+
+    private static void registerForCourse(Scanner scanner) {
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        Student student = studentDatabase.get(studentId);
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code to Register: ");
+        String courseCode = scanner.nextLine();
+        Course course = courseDatabase.get(courseCode);
+        if (course == null) {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (course.isFull()) {
+            System.out.println("Course is full.");
+            return;
+        }
+
+        course.enroll();
+        student.registerCourse(courseCode);
+        System.out.println("Registered successfully.");
+    }
+
+    private static void dropCourse(Scanner scanner) {
+        System.out.print("Enter Student ID: ");
+        String studentId = scanner.nextLine();
+        Student student = studentDatabase.get(studentId);
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code to Drop: ");
+        String courseCode = scanner.nextLine();
+        Course course = courseDatabase.get(courseCode);
+        if (course == null) {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (!student.registeredCourses.contains(courseCode)) {
+            System.out.println("You are not registered for this course.");
+            return;
+        }
+
+        course.drop();
+        student.dropCourse(courseCode);
+        System.out.println("Dropped successfully.");
+    }
+}
